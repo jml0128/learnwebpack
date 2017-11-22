@@ -4,15 +4,20 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const Ex = require("extract-text-webpack-plugin");
+const ImageminPlugin = require('imagemin-webpack-plugin').default
 
 module.exports = {
   entry: {
-	  app: './src/js/index.js'
+	  common: './src/js/common.js',
+	  jquery: './src/js/jquery.min.js',
+	  swiper: './src/js/swiper-3.4.0.min.js',
+	  app: './src/entry.js'
   },
   output: {
     filename: 'js/[name].bundle.js',
 	publicPath: '/dist',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
+	libraryTarget : 'var'
   },
   module: {
      rules: [
@@ -39,7 +44,7 @@ module.exports = {
          use: [{
            loader: 'file-loader',
 		   options:{
-			   name: 'font/[hash].[ext]'
+			   name: '/font/[hash].[ext]'
 		   }
          }]
        },
@@ -69,9 +74,31 @@ module.exports = {
        title: 'Output Management',
 	   template: './src/index.html'
      }),
+	  new HtmlWebpackPlugin({
+	   template: './src/media.html',
+	   filename:'media.html'
+     }),
+	  new HtmlWebpackPlugin({
+	   template: './src/user.html',
+	   filename:'user.html'
+     }),
+	 
+	 //加载jquery第三方库
+	 new webpack.ProvidePlugin({
+          "$": "jquery",
+          "jQuery": "jquery",
+          "window.jQuery": "jquery"
+      }),
 	 //压缩js，按需打包js代码
 	 new UglifyJSPlugin(),
-	 new Ex('css/[hash].css')
+	 new Ex('css/[hash].css'),
+	 //图片压缩,比较耗时,开发环境关闭
+	 new ImageminPlugin({
+      disable: false, 
+      pngquant: {
+        quality: '20-30'
+      }
+    })
 	 //热更新
 	// new webpack.NamedModulesPlugin(),
     // new webpack.HotModuleReplacementPlugin()
